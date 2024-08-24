@@ -27,6 +27,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(undefined, {
 }));
 app.use('/swagger-output.json', express.static(path.resolve('./swagger-output.json')));
 app.use(morgan("dev"));
+
 app.use('/api/user', authRoutes);
 app.use('/api/product', authProduct)
 app.use(notFound);
