@@ -14,6 +14,7 @@ export const authMiddleware = asyncHandler(async(req,res,next)=>{
                     throw new Error("User not found");
                 }
                 req.user = authenticatedUser;
+                console.log(req.user);
                 next();
             }
         } catch (err) {

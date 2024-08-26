@@ -5,6 +5,8 @@ import asyncHandler from "express-async-handler"
 import validateMongodbId from '../utils/validate.mongodbId.js';
 import generateRefreshToken from "../config/refershToken.js";
 import jwt from 'jsonwebtoken';
+import {sendEmail} from "../controllers/email.controller.js"
+
 // import generateToken from "../config/jwtToken.js";
 
 export const createUser = asyncHandler(async (req, res) => {
@@ -73,7 +75,68 @@ export const handleRefreshToken = asyncHandler(async (req, res) => {
       res.json({ accessToken });
     });
   });
+
+ export const forgetPasswordToken = asyncHandler(async(req,res)=>{
+    const {email} = req.body;
+    const userEnter = await user.findOne({email});
+    console.log(userEnter)
+    if(!userEnter){
+        throw new Error("User not found with this mail id");
+    };
+    try{ 
+        const token = await userEnter.createPasswordResetToken();
+        await userEnter.save();
+        
+const resetPasswordUrl = `
+<div style="font-family: 'Helvetica Neue', Arial, sans-serif; color: #2c3e50;">
+    <h2 style="color: #3498db;">Hey ${userEnter.firstname || 'there'},</h2>
+    <p>Forgot your password? No problem! Let's get you back into Quinn, shall we?</p>
+    <p>Click the link below to reset your password:</p>
+    <p style="text-align: center; margin: 20px 0;">
+        <a href="http://localhost:5000/api/user/reset-password/${token}" 
+           style="background-color: #3498db; color: #ffffff; padding: 12px 24px; 
+                  text-decoration: none; border-radius: 6px; font-weight: bold;">
+           Reset Your Password
+        </a>
+    </p>
+    <p>Heads up: this link is only valid for the next 10 minutes. Act fast!</p>
+    <p>If you didn't request this, you can safely ignore this email—no action needed.</p>
+    <p>Cheers,<br/>The Quinn Team</p>
+    <footer style="margin-top: 40px; color: #95a5a6; font-size: 14px;">
+        <p>Need assistance? <a href="http://localhost:5000/support" style="color: #3498db;">We're here to help</a></p>
+        <p>Quinn © 2024 - All rights reserved</p>
+    </footer>
+</div>
+`;
+    const data = {
+            to: email,
+            text: "hey user",
+            subject: "Forget Password Link",
+            html: resetPasswordUrl,
+        }
+        sendEmail(data);
+        res.status(201).json({
+            msg: "Massage send successfully"
+        })
+    }catch(err){
+        throw new Error(err);
+
+    }
+  })
   
+  export const resetPassword = asyncHandler(async(req,res)=>{
+    const {password} = req.body;
+    const {token} = req.params;
+    const hashedToken = crypto.createHash('sha256').update(token).digest("hex");
+    const userEnter = await user.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: {$gt:Date.now()}
+    })
+    if(!user) throw new Error("Token Expired, PLease try again later");
+    userEnter.password = password;
+
+
+})
 
   export const logout = asyncHandler(async (req, res) => {
     const cookies = req.cookies;
@@ -223,3 +286,18 @@ export const unblockUser = asyncHandler(async(req,res)=>{
         throw new Error(err);
     }
 })
+
+export const updatePassword = asyncHandler(async(req, res) => {
+    const { _id } = req.user;
+    const { password } = req.body; // Destructuring to get the password from req.body
+    validateMongodbId(_id);
+    const users = await user.findById(_id); // Retrieve the user document
+
+    if (password) {
+        users.password = password; // Update the password field
+        const updatedPassword = await users.save(); // Save the updated document
+        res.json(updatedPassword); // Send the updated user document as a response
+    } else {
+        res.json(users); // If no password is provided, return the user document as is
+    }
+});
