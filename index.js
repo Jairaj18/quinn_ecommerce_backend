@@ -7,9 +7,10 @@ import { notFound, errorHandler } from './middlewares/errorHandle.js';
 import authRoutes from './routes/auth.routes.js';
 import authProduct from './routes/product.routes.js'
 import dbConnect from './config/dbConnect.js';
+import blogRouter from './routes/blog.routes.js'
 import path from 'path';
 import morgan from 'morgan';
-import slugify from 'slugify';
+
 
 const app = express();
 dotenv.config();
@@ -29,7 +30,9 @@ app.use('/swagger-output.json', express.static(path.resolve('./swagger-output.js
 app.use(morgan("dev"));
 
 app.use('/api/user', authRoutes);
-app.use('/api/product', authProduct)
+app.use('/api/product', authProduct);
+app.use('/api/blog', blogRouter);
+
 app.use(notFound);
 app.use(errorHandler);
 

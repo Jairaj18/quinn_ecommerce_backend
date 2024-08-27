@@ -6,6 +6,7 @@ import validateMongodbId from '../utils/validate.mongodbId.js';
 import generateRefreshToken from "../config/refershToken.js";
 import jwt from 'jsonwebtoken';
 import {sendEmail} from "../controllers/email.controller.js"
+import crypto from 'crypto';
 
 // import generateToken from "../config/jwtToken.js";
 
@@ -124,19 +125,35 @@ const resetPasswordUrl = `
     }
   })
   
-  export const resetPassword = asyncHandler(async(req,res)=>{
-    const {password} = req.body;
-    const {token} = req.params;
-    const hashedToken = crypto.createHash('sha256').update(token).digest("hex");
+export const resetPassword = asyncHandler(async (req, res) => {
+    const { password } = req.body;
+    const { token } = req.params;
+
+    // Hash the token to compare with the stored token
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    // Find the user with the matching token and a valid expiration date
     const userEnter = await user.findOne({
         passwordResetToken: hashedToken,
-        passwordResetExpires: {$gt:Date.now()}
-    })
-    if(!user) throw new Error("Token Expired, PLease try again later");
-    userEnter.password = password;
+        passwordResetExpires: { $gt: Date.now() }
+    });
 
+    if (!userEnter) {
+        res.status(400).json({ message: 'Token Expired or Invalid. Please try again.' });
+        return;
+    }
 
-})
+    // Hash the new password before saving
+    userEnter.password = await bcrypt.hash(password, 12);
+
+    // Clear the reset token and expiration fields
+    userEnter.passwordResetToken = undefined;
+    userEnter.passwordResetExpires = undefined;
+
+    await userEnter.save();
+
+    res.status(200).json({ message: 'Password reset successfully.' });
+});
 
   export const logout = asyncHandler(async (req, res) => {
     const cookies = req.cookies;
