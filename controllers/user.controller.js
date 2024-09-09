@@ -227,7 +227,7 @@ export const deleteUser = asyncHandler(async(req,res)=>{
 })
 
 export const updateUser = asyncHandler(async (req, res) => {
-    const { id } = req.params; // Correct the typo 'rerq' to 'req'
+    const { id } = req.params;
     validateMongodbId(id)
     try {
         const updatedUser = await user.findByIdAndUpdate(

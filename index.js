@@ -5,9 +5,10 @@ import dotenv from 'dotenv';
 import cookieParser from "cookie-parser";
 import { notFound, errorHandler } from './middlewares/errorHandle.js';
 import authRoutes from './routes/auth.routes.js';
-import authProduct from './routes/product.routes.js'
+import authProduct from './routes/product.routes.js';
 import dbConnect from './config/dbConnect.js';
-import blogRouter from './routes/blog.routes.js'
+import blogRouter from './routes/blog.routes.js';
+import categoryRoutes from './routes/productCategories.routes.js';
 import path from 'path';
 import morgan from 'morgan';
 
@@ -32,6 +33,7 @@ app.use(morgan("dev"));
 app.use('/api/user', authRoutes);
 app.use('/api/product', authProduct);
 app.use('/api/blog', blogRouter);
+app.use('/api/category',categoryRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
