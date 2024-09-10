@@ -55,7 +55,6 @@ export const loginUser = asyncHandler(async (req, res) => {
             mobile: findUser?.mobile,
             token: generateToken(findUser?._id)
         });
-        console.log(updateUser);
     } else {
         res.status(401).json({ msg: "Invalid Credentials" });
     }

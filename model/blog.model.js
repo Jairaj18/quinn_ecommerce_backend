@@ -45,7 +45,7 @@ var blogSchema = new mongoose.Schema(
     author: {
       type: String,
       default: "Admin",
-    },
+    }, 
   },
   {
     toJSON: {
