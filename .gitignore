@@ -1,0 +1,17 @@
+# Ignore SSH keys
+7832
+7832.pub
+Backend_quinn (Copy)
+Backend_quinn (Copy).pub
+
+# Node modules
+node_modules
+
+# Environment files
+.env
+X
+
+\
+
+
+
