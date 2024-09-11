@@ -10,6 +10,7 @@ import dbConnect from './config/dbConnect.js';
 import blogRouter from './routes/blog.routes.js';
 import categoryRoutes from './routes/productCategories.routes.js';
 import brandRoutes from './routes/productBrand.routes.js';
+import couponRoute from './routes/coupon.routes.js';
 import path from 'path';
 import morgan from 'morgan';
 
@@ -35,7 +36,8 @@ app.use('/api/user', authRoutes);
 app.use('/api/product', authProduct);
 app.use('/api/blog', blogRouter);
 app.use('/api/category',categoryRoutes);
-app.use('/api/brand',brandRoutes);
+app.use('/api/brand',brandRoutes);// need to test
+app.use('/api/coupon',couponRoute)
 
 app.use(notFound);
 app.use(errorHandler);

@@ -61,6 +61,11 @@ export const updateProduct = asyncHandler(async (req, res) => {
   }
 });
 
+export uploadImages = asyncHandler(async(req,res)=>{
+    
+
+})
+
 export const deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   try {
