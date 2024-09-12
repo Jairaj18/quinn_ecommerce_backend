@@ -4,6 +4,8 @@ import asyncHandler from "express-async-handler";
 import { get } from "mongoose";
 import { query } from "express";
 import User from "../model/user.model.js";
+import validateMongodbId from "../utils/validate.mongodbId.js";
+import { cloudinaryUploadImg } from "../utils/cloudinary.js";
 
 export const createProduct = asyncHandler(async (req, res) => {
   const {
@@ -61,10 +63,60 @@ export const updateProduct = asyncHandler(async (req, res) => {
   }
 });
 
-export uploadImages = asyncHandler(async(req,res)=>{
-    
+export const uploadImages = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongodbId(id);
 
-})
+  try {
+    const uploader = (path) => cloudinaryUploadImg(path, 'images');
+    const urls = [];
+    const files = req.files;
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: 'No files uploaded.' });
+    }
+
+    for (const file of files) {
+      const { path } = file;
+      try {
+        const uploadedUrl = await uploader(path);
+        urls.push(uploadedUrl);
+      } catch (uploadError) {
+        console.error('Error uploading file:', uploadError);
+        return res.status(500).json({ message: 'Error uploading file.' });
+      } finally {
+        fs.unlinkSync(path); // Ensure file is deleted regardless of upload success
+      }
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { images: urls },
+      { new: true }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: 'Product not found.' });
+    }
+
+    return res.json(updatedProduct);
+  } catch (error) {
+    console.error('Error in uploadImages:', error);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+
+  export const deleteImages = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    try {
+      const deleted = cloudinaryDeleteImg(id, "images");
+      res.json({ message: "Deleted" });
+    } catch (error) {
+      throw new Error(error);
+    }
+  });
+  
 
 export const deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;

@@ -2,7 +2,7 @@ import blog from "../model/blog.model.js";
 import user from "../model/user.model.js";
 import asyncHandler from "express-async-handler";
 import validateMongodbId from "../utils/validate.mongodbId.js";
-
+import { cloudinaryUploadImg } from "../utils/cloudinary.js";
 
 export const createBlog = asyncHandler(async (req, res) => {
   try {
@@ -192,6 +192,48 @@ export const dislikeBlog = asyncHandler(async (req, res) => {
       }
     );
     return res.status(200).json(updatedBlog);
+  }
+});
+
+export const uploadImages = asyncHandler(async (req, res) => {
+  const { id } = req.params; // Make sure you're extracting the `id` from params
+  validateMongodbId(id); // Assuming you have a function to validate MongoDB ID
+
+  try {
+    // Cloudinary uploader function
+    const uploader = async (path) => await cloudinaryUploadImg(path, "images");
+
+    // Initialize an array to store the uploaded image URLs
+    const urls = [];
+
+    // Access the uploaded files
+    const files = req.files;
+
+    // Iterate through each file, upload, and collect URLs
+    for (const file of files) {
+      const { path } = file;
+      const newpath = await uploader(path);
+      urls.push(newpath);  // Push the uploaded image URL into the array
+      fs.unlinkSync(path); // Delete the local file after upload
+    }
+
+    // Update the blog with the uploaded image URLs
+    const updatedBlog = await blog.findByIdAndUpdate(
+      id,
+      {
+        images: urls,  // Use the array of image URLs
+      },
+      {
+        new: true,  // Return the updated document
+      }
+    );
+
+    // Send back the updated blog as a response
+    return res.json(uploader);
+  } catch (error) {
+    // Return the error as a response with a proper status
+    res.status(500);
+    return res.json({ message: error.message });
   }
 });
 

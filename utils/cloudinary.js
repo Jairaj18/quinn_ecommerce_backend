@@ -1,40 +1,39 @@
 import cloudinary from 'cloudinary';
+import dotenv from 'dotenv';
+dotenv.config();
+
+// Configure Cloudinary with environment variables
 cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.API_KEY,
-  api_secret: process.env.SECRET_KEY,
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET,  
 });
 
-export const cloudinaryUploadImg = async (fileToUploads) => {
-  return new Promise((resolve) => {
-    cloudinary.uploader.upload(fileToUploads, (result) => {
-      resolve(
-        {
-          url: result.secure_url,
-          asset_id: result.asset_id,
-          public_id: result.public_id,
-        },
-        {
-          resource_type: "auto",
-        }
-      );
-    });
-  });
-};
-export const cloudinaryDeleteImg = async (fileToDelete) => {
-  return new Promise((resolve) => {
-    cloudinary.uploader.destroy(fileToDelete, (result) => {
-      resolve(
-        {
-          url: result.secure_url,
-          asset_id: result.asset_id,
-          public_id: result.public_id,
-        },
-        {
-          resource_type: "auto",
-        }
-      );
+console.log("API Key:", process.env.API_KEY);
+
+
+export const cloudinaryUploadImg = (fileToUpload) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload(fileToUpload, 
+        { resource_type: "auto" }, 
+        (error, result) => {
+      if (error) {
+        return reject(error);
+      }
+      resolve({
+        url: result.secure_url, // Return only the secure URL of the uploaded image
+      });
     });
   });
 };
 
+export const cloudinaryDeleteImg = (publicIdToDelete) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.destroy(publicIdToDelete, (error, result) => {
+      if (error) {
+        return reject(error);
+      }
+      resolve(result); 
+    });
+  });
+};

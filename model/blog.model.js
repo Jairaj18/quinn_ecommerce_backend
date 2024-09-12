@@ -38,14 +38,15 @@ var blogSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
-    images: {
-      type: String,
-      default: "https://thumbs.dreamstime.com/b/blog-18609326.jpg",
-    },
+    // images: {
+    //   type: String,
+    //   default: "https://thumbs.dreamstime.com/b/blog-18609326.jpg",
+    // },
     author: {
       type: String,
       default: "Admin",
     }, 
+    images:[]
   },
   {
     toJSON: {
